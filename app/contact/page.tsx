@@ -36,7 +36,7 @@ export default function ContactPage() {
 
     try {
       await fetch(
-        "https://script.google.com/macros/s/AKfycbzpIjFJhUVestzBniZMIuCODSizQ1gn8r9A0ymgLLKw5kk2Refj2d_t-NJmR5TKCGuZ0Q/exec",
+        "https://script.google.com/macros/s/AKfycbxHohmQ3AFAlq7Sl3rQHUsa83gYtGgB4PK7_qZxEY6mQqakQ4pXI2HJ7YNYoD48aNuMPA/exec",
         {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=UTF-8" },
