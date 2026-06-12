@@ -1,0 +1,45 @@
+/* Rx-specific theme overrides — scoped to the .rx wrapper */
+.rx {
+  --color-background: #eef1f0;
+  --color-foreground: #1e293b;
+  --color-ivory: #eef1f0;
+  --color-ivory-light: #f5f7f7;
+  --color-sand: #dfe5e4;
+  --color-linen: #f7faf9;
+  --color-charcoal: #1e293b;
+  --color-charcoal-soft: #334155;
+  --color-stone: #64748b;
+  --color-stone-light: #94a3b8;
+  --color-stone-muted: #cbd5e1;
+  --color-accent: #0d5c5c;
+  --color-accent-light: #c8f0f0;
+  --color-accent-warm: #12a3a3;
+  --color-accent-deep: #093f3f;
+  --color-dark: #0f172a;
+  --color-dark-surface: #1e293b;
+  --color-ring: #0d5c5c;
+
+  background-color: #eef1f0;
+  background-image:
+    radial-gradient(circle at 25% 15%, rgba(247, 250, 249, 0.8) 0%, transparent 45%),
+    radial-gradient(circle at 75% 90%, rgba(223, 229, 228, 0.65) 0%, transparent 45%);
+}
+
+.rx ::selection {
+  background-color: #0d5c5c;
+  color: #f5f7f7;
+}
+
+.rx::-webkit-scrollbar-track,
+.rx ::-webkit-scrollbar-track {
+  background: #eef1f0;
+}
+
+.rx::-webkit-scrollbar-thumb,
+.rx ::-webkit-scrollbar-thumb {
+  background: #b8c4c4;
+}
+
+.rx .accent-dot {
+  color: #0d5c5c;
+}
