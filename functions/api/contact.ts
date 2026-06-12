@@ -5,7 +5,7 @@ interface Env {
 }
 
 const GAS_URL =
-  "https://script.google.com/macros/s/AKfycbzpIjFJhUVestzBniZMIuCODSizQ1gn8r9A0ymgLLKw5kk2Refj2d_t-NJmR5TKCGuZ0Q/exec";
+  "https://script.google.com/macros/s/AKfycbxJs49OHIMBQ1VLchjBzapwPc4xlUNcobQw2P-bD_dhlOv7Uf5bQ8jC1knZ3BJTKrHL3g/exec";
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   const { request } = context;
