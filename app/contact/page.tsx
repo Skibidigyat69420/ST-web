@@ -20,6 +20,7 @@ export default function ContactPage() {
     const phone = (data.get("phone") as string || "").trim();
     const iAmA = (data.get("role") as string || "").trim();
     const message = (data.get("message") as string || "").trim();
+    const website = (data.get("website") as string || "").trim();
 
     if (!name || !email || !message) {
       setError("Please fill in all required fields.");
@@ -34,19 +35,15 @@ export default function ContactPage() {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbzpIjFJhUVestzBniZMIuCODSizQ1gn8r9A0ymgLLKw5kk2Refj2d_t-NJmR5TKCGuZ0Q/exec",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, phone, iAmA, message }),
-          redirect: "manual",
-        }
-      );
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, phone, iAmA, message, website }),
+      });
 
-      // Google Apps Script returns a 302 redirect on success; don't follow it.
-      if (!response.ok && response.status !== 302 && response.status !== 303) {
-        throw new Error("Submission failed. Please try again.");
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result.error || "Submission failed. Please try again.");
       }
 
       setSuccess(true);

@@ -1,37 +1,38 @@
 /// <reference types="@cloudflare/workers-types" />
 
 interface Env {
-  CONTACT_SUBMISSIONS: KVNamespace;
+  CONTACT_SUBMISSIONS?: KVNamespace;
 }
 
-export const onRequestPost: PagesFunction<Env> = async (context) => {
-  const { request, env } = context;
+const GAS_URL =
+  "https://script.google.com/macros/s/AKfycbzpIjFJhUVestzBniZMIuCODSizQ1gn8r9A0ymgLLKw5kk2Refj2d_t-NJmR5TKCGuZ0Q/exec";
 
-  const contentType = request.headers.get("content-type") || "";
-  if (
-    !contentType.includes("application/x-www-form-urlencoded") &&
-    !contentType.includes("multipart/form-data")
-  ) {
-    return new Response(JSON.stringify({ error: "Unsupported content type" }), {
-      status: 415,
+export const onRequestPost: PagesFunction<Env> = async (context) => {
+  const { request } = context;
+
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+      status: 400,
       headers: { "content-type": "application/json" },
     });
   }
 
-  const form = await request.formData();
-
-  // Honeypot: bots often fill this hidden field
-  if (form.get("website")) {
-    const home = new URL("/", request.url);
-    return Response.redirect(home.toString(), 303);
+  // Honeypot: silently accept bot submissions without forwarding them
+  if (body.website) {
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
   }
 
-  const name = (form.get("name") || "").toString().trim();
-  const email = (form.get("email") || "").toString().trim();
-  const phone = (form.get("phone") || "").toString().trim();
-  const role = (form.get("role") || "").toString().trim();
-  const message = (form.get("message") || "").toString().trim();
-  const redirectUrl = (form.get("_redirect") || "/contact/thanks/").toString();
+  const name = String(body.name || "").trim();
+  const email = String(body.email || "").trim();
+  const phone = String(body.phone || "").trim();
+  const iAmA = String(body.iAmA || "").trim();
+  const message = String(body.message || "").trim();
 
   if (!name || !email || !message) {
     return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -59,29 +60,31 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     });
   }
 
-  const submission = {
-    name,
-    email,
-    phone,
-    role,
-    message,
-    submittedAt: new Date().toISOString(),
-    source: request.headers.get("referer") || "",
-    ip: request.headers.get("CF-Connecting-IP") || "",
-  };
-
-  const id = crypto.randomUUID();
-  const key = `submission:${submission.submittedAt}:${id}`;
-
   try {
-    await env.CONTACT_SUBMISSIONS.put(key, JSON.stringify(submission));
+    const gasResponse = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, phone, iAmA, message }),
+      redirect: "manual",
+    });
+
+    // Google Apps Script returns a 302 redirect on success
+    if (
+      !gasResponse.ok &&
+      gasResponse.status !== 302 &&
+      gasResponse.status !== 303
+    ) {
+      throw new Error(`Apps Script returned ${gasResponse.status}`);
+    }
   } catch (err) {
     return new Response(
-      JSON.stringify({ error: "Failed to save submission" }),
-      { status: 500, headers: { "content-type": "application/json" } }
+      JSON.stringify({ error: "Failed to submit. Please try again." }),
+      { status: 502, headers: { "content-type": "application/json" } }
     );
   }
 
-  const finalRedirect = new URL(redirectUrl, request.url);
-  return Response.redirect(finalRedirect.toString(), 303);
+  return new Response(JSON.stringify({ success: true }), {
+    status: 200,
+    headers: { "content-type": "application/json" },
+  });
 };
