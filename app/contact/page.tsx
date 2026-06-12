@@ -35,16 +35,15 @@ export default function ContactPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, iAmA, message, website }),
-      });
-
-      if (!response.ok) {
-        const result = await response.json().catch(() => ({}));
-        throw new Error(result.error || "Submission failed. Please try again.");
-      }
+      await fetch(
+        "https://script.google.com/macros/s/AKfycbzpIjFJhUVestzBniZMIuCODSizQ1gn8r9A0ymgLLKw5kk2Refj2d_t-NJmR5TKCGuZ0Q/exec",
+        {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=UTF-8" },
+          body: JSON.stringify({ name, email, phone, iAmA, message, website }),
+          mode: "no-cors",
+        }
+      );
 
       setSuccess(true);
       form.reset();
