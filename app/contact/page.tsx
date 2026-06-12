@@ -5,27 +5,55 @@ import { motion } from "framer-motion";
 
 export default function ContactPage() {
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    setSuccess(false);
+
     const form = e.currentTarget;
     const data = new FormData(form);
     const name = (data.get("name") as string || "").trim();
     const email = (data.get("email") as string || "").trim();
+    const phone = (data.get("phone") as string || "").trim();
+    const iAmA = (data.get("role") as string || "").trim();
     const message = (data.get("message") as string || "").trim();
 
     if (!name || !email || !message) {
-      e.preventDefault();
       setError("Please fill in all required fields.");
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      e.preventDefault();
       setError("Please enter a valid email address.");
       return;
     }
 
-    setError("");
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        "https://script.google.com/macros/s/AKfycbzpIjFJhUVestzBniZMIuCODSizQ1gn8r9A0ymgLLKw5kk2Refj2d_t-NJmR5TKCGuZ0Q/exec",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, phone, iAmA, message }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Submission failed. Please try again.");
+      }
+
+      setSuccess(true);
+      form.reset();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputClasses =
@@ -129,9 +157,16 @@ export default function ContactPage() {
                   </div>
                 )}
 
+                {success && (
+                  <div
+                    className="mb-6 px-4 py-3 text-body bg-green-500/10 text-green-200 border border-green-500/20"
+                    role="status"
+                  >
+                    Thank you. We have received your message and will respond within one business day.
+                  </div>
+                )}
+
                 <form
-                  action="/api/contact"
-                  method="POST"
                   onSubmit={handleSubmit}
                   className="space-y-6"
                 >
@@ -139,8 +174,6 @@ export default function ContactPage() {
                   <div className="hidden">
                     <input type="text" name="website" tabIndex={-1} autoComplete="off" />
                   </div>
-
-                  <input type="hidden" name="_redirect" value="/contact/thanks/" />
 
                   <div>
                     <label
@@ -229,9 +262,10 @@ export default function ContactPage() {
 
                   <button
                     type="submit"
-                    className="group relative w-full px-8 py-4 border border-linen/15 text-linen text-caption tracking-[0.15em] hover:bg-linen/5 transition-all duration-500"
+                    disabled={loading}
+                    className="group relative w-full px-8 py-4 border border-linen/15 text-linen text-caption tracking-[0.15em] hover:bg-linen/5 transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <span className="relative z-10">Send Message</span>
+                    <span className="relative z-10">{loading ? "Sending..." : "Send Message"}</span>
                     <div className="absolute bottom-0 left-0 w-full h-[1px] bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-700 origin-left" />
                   </button>
                 </form>
