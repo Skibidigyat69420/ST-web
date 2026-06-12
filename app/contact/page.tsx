@@ -40,10 +40,12 @@ export default function ContactPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name, email, phone, iAmA, message }),
+          redirect: "manual",
         }
       );
 
-      if (!response.ok) {
+      // Google Apps Script returns a 302 redirect on success; don't follow it.
+      if (!response.ok && response.status !== 302 && response.status !== 303) {
         throw new Error("Submission failed. Please try again.");
       }
 
