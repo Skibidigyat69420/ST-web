@@ -2,6 +2,9 @@
 # Rename the KV namespace binding below to match the one created in your Cloudflare dashboard.
 # Dashboard path: Workers & Pages → Your Pages project → Settings → Functions → KV namespace bindings
 
+compatibility_date = "2026-06-12"
+compatibility_flags = ["nodejs_compat"]
+
 [[kv_namespaces]]
 binding = "CONTACT_SUBMISSIONS"
 id = "<YOUR_KV_NAMESPACE_ID>"
